@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.sourceone.nemo.nemo.MainActivity">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/linearLayout">
+        <com.github.channguyen.rsv.RangeSliderView
+            xmlns:rsv="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="25dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            rsv:filledColor="#1A5F77"
+            rsv:rangeCount="16"
+            rsv:barHeightPercent="0.1"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/menu"
+        android:layout_below="@+id/linearLayout"
+        android:layout_alignParentStart="true">
+
+        <com.shawnlin.numberpicker.NumberPicker
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/tempo_picker"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:padding="0dp"
+            android:layout_margin="0dp"
+            android:layout_gravity="left"
+            android:gravity="left"
+            app:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            app:np_height="30dp"
+            app:np_dividerColor="@color/colorPrimary"
+            app:np_max="220"
+            app:np_min="1"
+            app:np_textSize="20dp"
+            app:np_orientation="horizontal"
+            app:np_textColor="@color/colorPrimary" />
+
+        <ToggleButton android:id="@+id/rewind"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textOff=""
+            android:textOn=""
+            android:background="@drawable/rewind_button"/>
+
+        <ToggleButton android:id="@+id/play"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textOff=""
+            android:textOn=""
+            android:background="@drawable/play_button"/>
+
+        <ToggleButton android:id="@+id/record"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:textOff=""
+            android:textOn=""
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/record_button"/>
+
+        <Switch
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Load"
+            android:id="@+id/load" />
+
+
+    </LinearLayout>
+    <GridView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/pads"
+        android:numColumns="4"
+        android:gravity="center"
+        android:stretchMode="columnWidth"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/menu"
+        android:layout_alignParentStart="true" />
+
+</RelativeLayout>
