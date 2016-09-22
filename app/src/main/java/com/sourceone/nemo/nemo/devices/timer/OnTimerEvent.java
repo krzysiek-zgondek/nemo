@@ -1,6 +1,4 @@
-package com.sourceone.nemo.nemo.sgine.timer;
-
-import com.sourceone.nemo.nemo.sgine.timer.TimerEvent;
+package com.sourceone.nemo.nemo.devices.timer;
 
 /**
  * Created by SourceOne on 21.09.2016.

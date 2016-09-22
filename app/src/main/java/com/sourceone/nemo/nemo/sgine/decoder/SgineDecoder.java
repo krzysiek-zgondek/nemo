@@ -15,7 +15,7 @@ import java.util.ArrayList;
 /**
  * Created by SourceOne on 12.09.2016.
  */
-public class Decoder {
+public class SgineDecoder {
     public interface OnDecodeCompleted{
         void onDecodeCompleted(ByteBuffer sample, MediaFormat format);
     }
@@ -23,19 +23,19 @@ public class Decoder {
     private final MediaExtractor extractor;
     private OnDecodeCompleted onDecodeCompleteListener;
 
-    private Decoder(){
+    private SgineDecoder(){
         extractor = new MediaExtractor();
     }
 
     public static void decode(AssetFileDescriptor descriptor, final OnDecodeCompleted listener) throws IOException {
-        Decoder decoder = new Decoder();
+        SgineDecoder decoder = new SgineDecoder();
         decoder.setOnDecodeCompleteListener(listener);
         decoder.setSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
         decoder.proceed();
     }
 
     public static void decode(String filepath, final OnDecodeCompleted listener) throws IOException {
-        Decoder decoder = new Decoder();
+        SgineDecoder decoder = new SgineDecoder();
         decoder.setOnDecodeCompleteListener(listener);
         decoder.setSource(filepath);
         decoder.proceed();

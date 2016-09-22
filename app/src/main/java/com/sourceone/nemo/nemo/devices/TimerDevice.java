@@ -1,13 +1,15 @@
-package com.sourceone.nemo.nemo.sgine.timer;
+package com.sourceone.nemo.nemo.devices;
 
 import android.util.Log;
 
 import com.sourceone.nemo.nemo.Settings;
-import com.sourceone.nemo.nemo.sgine.SgineDevice;
-import com.sourceone.nemo.nemo.sgine.SgineRouter;
-import com.sourceone.nemo.nemo.sgine.connections.SgineInput;
+import com.sourceone.nemo.nemo.devices.timer.OnTimerEvent;
+import com.sourceone.nemo.nemo.devices.timer.TimerEvent;
+import com.sourceone.nemo.nemo.devices.timer.TimerThread;
+import com.sourceone.nemo.nemo.sgine.devices.SgineDevice;
+import com.sourceone.nemo.nemo.sgine.devices.SgineRouter;
 import com.sourceone.nemo.nemo.sgine.connections.SgineOutput;
-import com.sourceone.nemo.nemo.sgine.connections.SgineSignal;
+import com.sourceone.nemo.nemo.signals.TimerSignal;
 
 /**
  * Created by SourceOne - Krzysztof Zgondek on 21.09.2016.
@@ -15,7 +17,6 @@ import com.sourceone.nemo.nemo.sgine.connections.SgineSignal;
 
 public class TimerDevice extends SgineDevice implements OnTimerEvent {
     private final SgineOutput<TimerSignal> timerOutput;
-    private final SgineOutput<TestSignal> testOutput;
 
     private int steps = Settings.Default.STEPS;
     private int beats = Settings.Default.BEATS;
@@ -23,22 +24,26 @@ public class TimerDevice extends SgineDevice implements OnTimerEvent {
 
     private TimerThread timerThread;
 
+    private long tickTime;
+
     public TimerDevice(){
-        timerThread = createNewTimer(steps, bpm);
         timerOutput = createNewOutput(TimerSignal.class);
-        testOutput = createNewOutput(TestSignal.class);
+
+        initialize();
+    }
+
+    private void initialize() {
+        tickTime = (long) (1000000000*(60.0/steps/bpm));
+
+        timerThread = createNewTimer(steps, bpm);
     }
 
     private TimerThread createNewTimer(int steps, double bpm) {
-        TimerThread thread = new TimerThread(steps, bpm);
+        Log.d("TimerDevice", "Tick time is: "+String.valueOf(tickTime)+"ns");
+
+        TimerThread thread = new TimerThread(tickTime);
         thread.setOnTimerEventListener(this);
         return thread;
-    }
-
-    @Override
-    public void onTimerEvent(TimerEvent event) {
-        timerOutput.write(new TimerSignal(event));
-        testOutput.write(new TestSignal(event));
     }
 
     public void start() {
@@ -46,11 +51,12 @@ public class TimerDevice extends SgineDevice implements OnTimerEvent {
     }
 
     @Override
-    public void wire(SgineRouter router) {
-        SgineInput<TimerSignal> timerInput = router.getOrCreateInput(TimerSignal.class);
-        SgineInput<TestSignal> testInput = router.getOrCreateInput(TestSignal.class);
+    public void onTimerEvent(TimerEvent event) {
+        timerOutput.write(new TimerSignal(event));
+    }
 
-        timerOutput.connect(timerInput);
-        testOutput.connect(testInput);
+    @Override
+    public void wire(SgineRouter router) {
+        timerOutput.connect(router.getOrCreateInput(TimerSignal.class));
     }
 }

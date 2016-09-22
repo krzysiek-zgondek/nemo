@@ -1,19 +1,18 @@
-package com.sourceone.nemo.nemo.sgine.timer;
+package com.sourceone.nemo.nemo.devices.timer;
 
 /**
  * Created by SourceOne on 21.09.2016.
  */
 
 public class TimerThread extends Thread{
-
     private OnTimerEvent onTimerEventListener;
 
-    private long stepTick;
-    private long nowTick;
-    private long lastTick;
+    private long tickTime;
+    private long nowTime;
+    private long lastTime;
 
-    public TimerThread(int steps, double BPM){
-        this.stepTick = (long) (1000000000*(60.0/steps/BPM));
+    public TimerThread(long tickTime){
+        this.tickTime = tickTime;
     }
 
     @Override
@@ -32,12 +31,12 @@ public class TimerThread extends Thread{
     public void run() {
         super.run();
 
-        lastTick = System.nanoTime() - stepTick;
+        lastTime = System.nanoTime() - tickTime;
         while (!Thread.interrupted()) {
-            nowTick = System.nanoTime();
-            if (nowTick - lastTick >= stepTick) {
+            nowTime = System.nanoTime();
+            if (nowTime - lastTime >= tickTime) {
                 onTimerEventListener.onTimerEvent(TimerEvent.TICK);
-                lastTick = nowTick;
+                lastTime = nowTime;
             }
         }
     }

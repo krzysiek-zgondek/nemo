@@ -1,4 +1,4 @@
-package com.sourceone.nemo.nemo.sgine;
+package com.sourceone.nemo.nemo.sgine.devices;
 
 import android.support.annotation.NonNull;
 
@@ -29,8 +29,12 @@ public abstract class SgineDevice{
 
     protected <Signal extends SgineSignal> SgineSocket<Signal> attachNewSocket(Class<Signal> cls) {
         SgineSocket<Signal> socket = createNewSocket();
-        sockets.put(cls, socket);
+        return attachSocket(cls, socket);
+    }
 
+    protected <Signal extends SgineSignal> SgineSocket<Signal> attachSocket(Class<Signal> cls,
+                                                                            SgineSocket<Signal> socket) {
+        sockets.put(cls, socket);
         return socket;
     }
 

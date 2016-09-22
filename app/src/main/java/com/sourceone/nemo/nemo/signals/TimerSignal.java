@@ -1,5 +1,6 @@
-package com.sourceone.nemo.nemo.sgine.timer;
+package com.sourceone.nemo.nemo.signals;
 
+import com.sourceone.nemo.nemo.devices.timer.TimerEvent;
 import com.sourceone.nemo.nemo.sgine.connections.SgineSignal;
 
 /**

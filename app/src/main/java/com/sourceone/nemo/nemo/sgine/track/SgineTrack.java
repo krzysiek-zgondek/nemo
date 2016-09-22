@@ -1,6 +1,5 @@
 package com.sourceone.nemo.nemo.sgine.track;
 
-import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
@@ -9,8 +8,6 @@ import android.util.Log;
 import android.util.SparseArray;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Vector;
 
 import hugo.weaving.DebugLog;
 
@@ -18,11 +15,11 @@ import hugo.weaving.DebugLog;
  * Created by SourceOne on 12.09.2016.
  */
 
-public class Track {
+public class SgineTrack {
     private AudioTrack audio;
     private SparseArray<Boolean> ticks = new SparseArray<>();
 
-    public Track(ByteBuffer sample, MediaFormat format) {
+    public SgineTrack(ByteBuffer sample, MediaFormat format) {
         int channelNum = AudioFormat.CHANNEL_OUT_STEREO;
         if(format.getInteger(MediaFormat.KEY_CHANNEL_COUNT) == 1)
             channelNum = AudioFormat.CHANNEL_OUT_MONO;
@@ -43,11 +40,11 @@ public class Track {
         audio.write(sample, sample.capacity(), AudioTrack.WRITE_BLOCKING);
     }
 
-    public static Track create(ByteBuffer sample, MediaFormat format){
-        return new Track(sample, format);
+    public static SgineTrack create(ByteBuffer sample, MediaFormat format){
+        return new SgineTrack(sample, format);
     }
 
-    public static void play(Track track){
+    public static void play(SgineTrack track){
         if(track==null)
             return;
 
@@ -57,12 +54,11 @@ public class Track {
     public void play(){
         switch (audio.getPlayState()) {
             case AudioTrack.PLAYSTATE_PAUSED:
-                audio.stop();
                 audio.reloadStaticData();
                 audio.play();
                 break;
             case AudioTrack.PLAYSTATE_PLAYING:
-                audio.stop();
+                audio.pause();
                 audio.reloadStaticData();
                 audio.play();
                 break;
@@ -73,12 +69,23 @@ public class Track {
         }
     }
 
+    public static void stop(SgineTrack track) {
+        if(track==null)
+            return;
+
+        track.stop();
+    }
+
+    public void stop(){
+        audio.stop();
+    }
+
     public void release() {
         if(audio!=null)
             audio.release();
     }
 
-    public static void record(Track track, int current_tick) {
+    public static void record(SgineTrack track, int current_tick) {
         if(track==null)
             return;
 
@@ -90,7 +97,7 @@ public class Track {
         ticks.put(current_tick, true);
     }
 
-    public static void tick(Track track, int current_tick) {
+    public static void tick(SgineTrack track, int current_tick) {
         if(track==null)
             return;
         track.tick(current_tick);
@@ -104,4 +111,5 @@ public class Track {
     public void volume(float v) {
         audio.setVolume(v);
     }
+
 }

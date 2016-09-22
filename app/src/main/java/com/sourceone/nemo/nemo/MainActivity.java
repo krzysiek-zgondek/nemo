@@ -13,8 +13,8 @@ import com.github.angads25.filepicker.model.DialogProperties;
 import com.github.angads25.filepicker.view.FilePickerDialog;
 import com.github.channguyen.rsv.RangeSliderView;
 import com.shawnlin.numberpicker.NumberPicker;
-import com.sourceone.nemo.nemo.sgine.decoder.Decoder;
-import com.sourceone.nemo.nemo.sgine.track.Track;
+import com.sourceone.nemo.nemo.sgine.decoder.SgineDecoder;
+import com.sourceone.nemo.nemo.sgine.track.SgineTrack;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,15 +30,12 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.tempo_picker) NumberPicker tempoPicker;
     @BindView(R.id.progress) RangeSliderView progress;
 
-    private Track tracks[] = new Track[Settings.MAX_TRACKS+Settings.SPECIAL_TRACKS];
+    private SgineTrack tracks[] = new SgineTrack[Settings.MAX_TRACKS];
 
     private boolean loadingMode;
-    private long lastTick;
-    private long startTick;
     private long tick;
     private double BPM = Settings.Default.BPM;
     private int steps = 4;
-    private int beats = 16;
     private boolean isRecordMode = false;
     private double beat;
 
@@ -79,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onSelectedFilePaths(String[] files) {
                             if(files.length > 0) {
                                 try {
-                                    Decoder.decode(files[0], createPadHandler(position, 1.0f));
+                                    SgineDecoder.decode(files[0], createPadHandler(position, 1.0f));
                                     int index = files[0].lastIndexOf("/");
                                     String fileName = files[0].substring(index + 1);
                                     holder.name.setText(fileName);
@@ -91,33 +88,19 @@ public class MainActivity extends AppCompatActivity {
                     });
                     dialog.show();
                 }else if(isRecordMode){
-//                    Track.record(tracks[position], timer.current_tick);
-                }else Track.play(tracks[position]);
+//                    SgineTrack.record(tracks[position], timer.current_tick);
+                }else SgineTrack.play(tracks[position]);
             }
         }));
-
-        try {
-            Decoder.decode(getAssets().openFd("snare.mp3"), createPadHandler(0, 1.0f));
-            Decoder.decode(getAssets().openFd("hihat.mp3"), createPadHandler(1, 1.0f));
-            Decoder.decode(getAssets().openFd("kick.mp3"), createPadHandler(2, 1.0f));
-            Decoder.decode(getAssets().openFd("tick.mp3"), createPadHandler(Settings.METRONOME_TICK, 0.3f));
-            Decoder.decode(getAssets().openFd("tick.mp3"), createPadHandler(Settings.METRONOME_TACK, 0.7f));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Machine machine = new Machine();
-        machine.start();
     }
 
-    public Decoder.OnDecodeCompleted createPadHandler(final int pad, final float gain){
-        return new Decoder.OnDecodeCompleted() {
+    public SgineDecoder.OnDecodeCompleted createPadHandler(final int pad, final float gain){
+        return new SgineDecoder.OnDecodeCompleted() {
             @Override
             public void onDecodeCompleted(ByteBuffer sample, MediaFormat format) {
                 if(tracks[pad] != null)
                     tracks[pad].release();
-                tracks[pad] = Track.create(sample, format);
+                tracks[pad] = SgineTrack.create(sample, format);
                 tracks[pad].volume(gain);
                 Toast.makeText(MainActivity.this, "Loaded", Toast.LENGTH_SHORT).show();
             }

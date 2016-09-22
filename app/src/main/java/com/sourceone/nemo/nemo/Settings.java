@@ -5,9 +5,6 @@ package com.sourceone.nemo.nemo;
  */
 public class Settings {
     public static final int MAX_TRACKS = 16;
-    public static final int SPECIAL_TRACKS = 2;
-    public static final int METRONOME_TICK = 16;
-    public static final int METRONOME_TACK = 17;
 
     public class Default {
         public static final double BPM = 120;
