@@ -7,12 +7,14 @@ package com.sourceone.nemo.nemo.devices.timer;
 public class TimerThread extends Thread{
     private OnTimerEvent onTimerEventListener;
 
+    private int latency;
     private long tickTime;
     private long nowTime;
     private long lastTime;
 
-    public TimerThread(long tickTime){
+    public TimerThread(long tickTime, int latency){
         this.tickTime = tickTime;
+        this.latency = latency*1000000;
     }
 
     @Override
@@ -31,14 +33,19 @@ public class TimerThread extends Thread{
     public void run() {
         super.run();
 
-        lastTime = System.nanoTime() - tickTime;
+        trigger();
+        lastTime = System.nanoTime()+latency;
         while (!Thread.interrupted()) {
             nowTime = System.nanoTime();
             if (nowTime - lastTime >= tickTime) {
-                onTimerEventListener.onTimerEvent(TimerEvent.TICK);
-                lastTime = nowTime;
+                trigger();
             }
         }
+    }
+
+    private void trigger() {
+        onTimerEventListener.onTimerEvent(TimerEvent.TICK);
+        lastTime = nowTime;
     }
 
     public void setOnTimerEventListener(OnTimerEvent onTimerEventListener) {

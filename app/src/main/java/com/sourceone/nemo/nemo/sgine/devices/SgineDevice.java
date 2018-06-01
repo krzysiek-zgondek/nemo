@@ -59,5 +59,5 @@ public abstract class SgineDevice{
         return input;
     }
 
-    public void wire(SgineRouter router){}
+    public void wire(SgineDevice device){}
 }

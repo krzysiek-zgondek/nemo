@@ -1,23 +1,32 @@
 package com.sourceone.nemo.nemo.sgine.decoder;
 
 import android.content.res.AssetFileDescriptor;
+import android.media.AudioFormat;
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.sourceone.nemo.nemo.Settings;
+
+import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Created by SourceOne on 12.09.2016.
  */
 public class SgineDecoder {
     public interface OnDecodeCompleted{
-        void onDecodeCompleted(ByteBuffer sample, MediaFormat format);
+        void onDecodeCompleted(ByteBuffer data, MediaFormat format);
     }
 
     private final MediaExtractor extractor;
@@ -85,13 +94,13 @@ public class SgineDecoder {
                         buffer.clear( );
                         chunks.add(chunk);
 
-                        Log.d(getClass().getName(), "Written "+info.size+ "bytes");
+//                        Log.d(getClass().getName(), "Written "+info.size+ "bytes");
                     }
 
                     codec.releaseOutputBuffer(index, false);
 
                     if(info.flags == MediaCodec.BUFFER_FLAG_END_OF_STREAM) {
-                        Log.d(getClass().getName(), "EOS. Stopping decoder!");
+//                        Log.d(getClass().getName(), "EOS. Stopping decoder!");
                         finish(codec, chunks, format, onDecodeCompleteListener);
                     }
                 }
@@ -103,7 +112,7 @@ public class SgineDecoder {
 
                 @Override
                 public void onOutputFormatChanged(@NonNull MediaCodec codec, @NonNull MediaFormat format) {
-                    Log.d(getClass().getName(), "Format changed" + format.toString());
+//                    Log.d(getClass().getName(), "Format changed" + format.toString());
                 }
             });
 
@@ -134,10 +143,25 @@ public class SgineDecoder {
         for(byte [] chunk: chunks)
             size = size + chunk.length;
 
-        ByteBuffer sample = ByteBuffer.allocate(size);
-        for(byte [] chunk: chunks)
-            sample.put(chunk);
+        int channels = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+
+        ByteBuffer sample;
+        if(Settings.AudioFormat.CHANNELS == AudioFormat.CHANNEL_OUT_STEREO && channels == 2){
+            sample = ByteBuffer.allocate(size);
+            for(byte [] chunk: chunks)
+                sample.put(chunk);
+        }else{
+            sample = ByteBuffer.allocate(size*2);
+            for(byte [] chunk: chunks) {
+                for(int i = 0; i < chunk.length; i+=2){
+                    sample.put(chunk, i, 2);
+                    sample.put(chunk, i, 2);
+                }
+            }
+        }
+
         sample.rewind();
+        sample.order(ByteOrder.nativeOrder());
 
         if(listener!=null)
             listener.onDecodeCompleted(sample, format);

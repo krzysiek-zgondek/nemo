@@ -31,19 +31,19 @@ public class MetronomeDevice extends SgineDevice {
 
 
     @Override
-    public void wire(SgineRouter router) {
-        samplerOutput.connect(router.getOrCreateInput(SamplerSignal.class));
+    public void wire(SgineDevice device) {
+        samplerOutput.connect(device.getOrCreateInput(SamplerSignal.class));
 
-        router.getOrCreateOutput(TimerSignal.class).connect(new SgineInput<TimerSignal>() {
-            int counter = 0;
+        device.getOrCreateOutput(TimerSignal.class).connect(new SgineInput<TimerSignal>() {
+            public int counter = 0;
+
             @Override
             public void onSignal(TimerSignal signal) {
+                samplerOutput.write(new SamplerSignal(1, false, SamplerEvent.PLAY));
                 samplerOutput.write(new SamplerSignal(SamplerDevice.SPECIAL_METRONOME_TRACK, true, SamplerEvent.PLAY));
-                if(counter%2==0)
-                    samplerOutput.write(new SamplerSignal(1, false, SamplerEvent.PLAY));
-                if(counter == 7)
+                if(counter % 8 == 4)
                     samplerOutput.write(new SamplerSignal(0, false, SamplerEvent.PLAY));
-                counter = (counter + 1)%8;
+                counter++;
             }
         });
     }

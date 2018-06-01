@@ -11,4 +11,10 @@ public class Settings {
         public static final int STEPS = 4;
         public static final int BEATS = 16;
     }
+
+    public class AudioFormat {
+        public static final int SAMPLE_RATE = 44100;
+        public static final int ENCODING = android.media.AudioFormat.ENCODING_PCM_16BIT;
+        public static final int CHANNELS = android.media.AudioFormat.CHANNEL_OUT_STEREO;
+    }
 }

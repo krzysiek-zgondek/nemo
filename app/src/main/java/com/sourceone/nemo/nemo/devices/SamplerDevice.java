@@ -1,19 +1,20 @@
 package com.sourceone.nemo.nemo.devices;
 
 import android.content.Context;
-import android.media.MediaFormat;
+import android.media.AudioManager;
 
-import com.sourceone.nemo.nemo.devices.sampler.OnSampleDecoded;
 import com.sourceone.nemo.nemo.devices.timer.SamplerEvent;
+import com.sourceone.nemo.nemo.devices.timer.TimerEvent;
+import com.sourceone.nemo.nemo.sgine.SgineAudio;
 import com.sourceone.nemo.nemo.sgine.connections.SgineInput;
 import com.sourceone.nemo.nemo.sgine.decoder.SgineDecoder;
 import com.sourceone.nemo.nemo.sgine.devices.SgineDevice;
 import com.sourceone.nemo.nemo.sgine.devices.SgineRouter;
 import com.sourceone.nemo.nemo.sgine.track.SgineTrack;
 import com.sourceone.nemo.nemo.signals.SamplerSignal;
+import com.sourceone.nemo.nemo.signals.TimerSignal;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.lang.reflect.Method;
 
 /**
  * Created by SourceOne - Krzysztof Zgondek on 22.09.2016.
@@ -28,8 +29,11 @@ public class SamplerDevice extends SgineDevice {
     private Context context;
     private int maxTracks = 0;
 
+    private SgineAudio audio;
     private SgineTrack tracks[];
 
+    private AudioManager am;
+    private Method m;
 
     public SamplerDevice(Context context) {
         this(context, TEST_TRACKS);
@@ -43,40 +47,15 @@ public class SamplerDevice extends SgineDevice {
     }
 
     private void initialize() {
+        audio = new SgineAudio();
         tracks = new SgineTrack[maxTracks + SPECIAL_TRACKS];
 
-        createTestTracks();
-        createSpecialTracks();
-    }
+        tracks[0] = SgineTrack.create().load("snare.mp3", 0.4f, context.getAssets());
+        tracks[1] = SgineTrack.create().load("hihat.mp3", 0.4f, context.getAssets());
+        tracks[2] = SgineTrack.create().load("kick.mp3", 0.4f, context.getAssets());
+        tracks[maxTracks + SPECIAL_METRONOME_TRACK] = SgineTrack.create().load("tick.mp3", 1.0f, context.getAssets());
 
-    public SgineDecoder.OnDecodeCompleted createTrackHandler(int track, float gain){
-        return new OnSampleDecoded(this, track, gain);
-    }
-
-    public void createTrack(int track, ByteBuffer sample, MediaFormat format, float gain) {
-        if(tracks[track] != null)
-            tracks[track].release();
-        tracks[track] = SgineTrack.create(sample, format);
-        tracks[track].volume(gain);
-    }
-
-    public void createSpecialTracks(){
-        try {
-            SgineDecoder.decode(context.getAssets().openFd("tick.mp3"),
-                    createTrackHandler(maxTracks + SPECIAL_METRONOME_TRACK, 1.0f));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void createTestTracks() {
-        try {
-            SgineDecoder.decode(context.getAssets().openFd("snare.mp3"), createTrackHandler(0, 1.0f));
-            SgineDecoder.decode(context.getAssets().openFd("hihat.mp3"), createTrackHandler(1, 1.0f));
-            SgineDecoder.decode(context.getAssets().openFd("kick.mp3"), createTrackHandler(2, 1.0f));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        audio.setTracks(tracks);
     }
 
     public SgineTrack getTrack(int track, boolean special){
@@ -84,16 +63,26 @@ public class SamplerDevice extends SgineDevice {
     }
 
     @Override
-    public void wire(SgineRouter router) {
-        super.wire(router);
-        router.getOrCreateOutput(SamplerSignal.class).connect(new SgineInput<SamplerSignal>() {
+    public void wire(SgineDevice device) {
+        super.wire(device);
+        device.getOrCreateOutput(SamplerSignal.class).connect(new SgineInput<SamplerSignal>() {
             @Override
             public void onSignal(SamplerSignal signal) {
                 SgineTrack track = getTrack(signal.getTrack(), signal.isSpecial());
                 if(signal.getEvent() == SamplerEvent.PLAY)
-                    SgineTrack.play(track);
+                    track.play();
                 else if(signal.getEvent() == SamplerEvent.STOP)
-                    SgineTrack.stop(track);
+                    track.stop();
+            }
+        });
+        device.getOrCreateOutput(TimerSignal.class).connect(new SgineInput<TimerSignal>() {
+            @Override
+            public void onSignal(TimerSignal signal) {
+                if(signal.getEvent() == TimerEvent.START)
+                    audio.start();
+                else if(signal.getEvent() == TimerEvent.STOP)
+                    audio.stop();
+
             }
         });
     }

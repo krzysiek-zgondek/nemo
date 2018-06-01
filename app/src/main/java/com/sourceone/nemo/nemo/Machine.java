@@ -27,7 +27,7 @@ public class Machine {
         Router = new SgineRouter();
 
 //        Logger = new LogDevice();
-        Timer = new TimerDevice();
+        Timer = new TimerDevice(context);
         Sampler = new SamplerDevice(context);
         Metronome = new MetronomeDevice();
 
