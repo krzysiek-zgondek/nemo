@@ -1,7 +1,10 @@
-package com.sourceone.nemo.nemo;
+package com.sourceone.nemo.nemo.android;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.sourceone.nemo.nemo.Machine;
+import com.sourceone.nemo.nemo.R;
 
 public class TestActivity extends AppCompatActivity {
 

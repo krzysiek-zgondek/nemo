@@ -1,13 +1,22 @@
 package com.sourceone.nemo.nemo.sgine.track;
 
+import android.content.res.AssetManager;
 import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioTimestamp;
 import android.media.AudioTrack;
 import android.media.MediaFormat;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
 
+import com.sourceone.nemo.nemo.sgine.SgineSample;
+import com.sourceone.nemo.nemo.sgine.decoder.SgineDecoder;
+
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Properties;
+import java.util.UUID;
 
 import hugo.weaving.DebugLog;
 
@@ -16,100 +25,72 @@ import hugo.weaving.DebugLog;
  */
 
 public class SgineTrack {
-    private AudioTrack audio;
-    private SparseArray<Boolean> ticks = new SparseArray<>();
+    private SgineSample sample;
 
-    public SgineTrack(ByteBuffer sample, MediaFormat format) {
-        int channelNum = AudioFormat.CHANNEL_OUT_STEREO;
-        if(format.getInteger(MediaFormat.KEY_CHANNEL_COUNT) == 1)
-            channelNum = AudioFormat.CHANNEL_OUT_MONO;
+    private float gain = 1.0f;
+    private long playing = -1;
 
-        Log.d(getClass().getName(), "CH NUM: " + format.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
-        Log.d(getClass().getName(), "SM RATE: " + format.getInteger(MediaFormat.KEY_SAMPLE_RATE));
+    public static SgineTrack create(){ return new SgineTrack(); }
+
+    private SgineTrack() {}
+
+    private static SgineSample createSample(ByteBuffer data, MediaFormat format) {
+        int channels = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
         int sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
 
-        audio = new AudioTrack(
-                AudioManager.STREAM_MUSIC,
-                sampleRate,
-                channelNum,
-                AudioFormat.ENCODING_PCM_16BIT,
-                sample.capacity(),
-                AudioTrack.MODE_STATIC
-        );
-
-        audio.write(sample, sample.capacity(), AudioTrack.WRITE_BLOCKING);
+        return new SgineSample(data, sampleRate, channels, UUID.randomUUID());
     }
 
-    public static SgineTrack create(ByteBuffer sample, MediaFormat format){
-        return new SgineTrack(sample, format);
+    private static void printSampleData(SgineSample sample) {
+        Log.d(SgineTrack.class.getSimpleName(), "SAMPLE CH NUM: " + sample.getSampleChannels());
+        Log.d(SgineTrack.class.getSimpleName(), "SAMPLE SM RATE: " + sample.getSampleRate());
+        Log.d(SgineTrack.class.getSimpleName(), "SAMPLE LENGTH: " + sample.getSampleTime()+ "ms");
     }
 
-    public static void play(SgineTrack track){
-        if(track==null)
-            return;
-
-        track.play();
+    public SgineTrack load(String filename, float gain) {
+        return load(filename, gain, null);
     }
 
-    public void play(){
-        switch (audio.getPlayState()) {
-            case AudioTrack.PLAYSTATE_PAUSED:
-                audio.reloadStaticData();
-                audio.play();
-                break;
-            case AudioTrack.PLAYSTATE_PLAYING:
-                audio.pause();
-                audio.reloadStaticData();
-                audio.play();
-                break;
-            case AudioTrack.PLAYSTATE_STOPPED:
-                audio.reloadStaticData();
-                audio.play();
-                break;
+    public SgineTrack load(String filename, float gain, AssetManager manager) {
+        try {
+            if(manager == null)
+                SgineDecoder.decode(filename, createDecoderListener());
+            else SgineDecoder.decode(manager.openFd(filename), createDecoderListener());
+            this.gain = gain;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return this;
     }
 
-    public static void stop(SgineTrack track) {
-        if(track==null)
-            return;
-
-        track.stop();
+    @NonNull
+    private SgineDecoder.OnDecodeCompleted createDecoderListener() {
+        return new SgineDecoder.OnDecodeCompleted() {
+            @Override
+            public void onDecodeCompleted(ByteBuffer data, MediaFormat format) {
+                sample = createSample(data, format);
+                printSampleData(sample);
+            }
+        };
     }
 
-    public void stop(){
-        audio.stop();
+    public SgineSample getSample() {
+        return sample;
     }
 
-    public void release() {
-        if(audio!=null)
-            audio.release();
+    public long getPlayEventTime() {
+        return playing;
     }
 
-    public static void record(SgineTrack track, int current_tick) {
-        if(track==null)
-            return;
-
-        track.record(current_tick);
+    public void play() {
+        playing = System.currentTimeMillis();
     }
 
-    @DebugLog
-    private void record(int current_tick) {
-        ticks.put(current_tick, true);
+    public void stop() {
+        playing = -1;
     }
 
-    public static void tick(SgineTrack track, int current_tick) {
-        if(track==null)
-            return;
-        track.tick(current_tick);
+    public float getGain() {
+        return gain;
     }
-
-    public void tick(int current_tick) {
-        if(ticks.get(current_tick, false))
-            play();
-    }
-
-    public void volume(float v) {
-        audio.setVolume(v);
-    }
-
 }

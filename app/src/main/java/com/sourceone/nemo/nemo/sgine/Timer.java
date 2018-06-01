@@ -1,6 +1,6 @@
 //package com.sourceone.nemo.nemo.sgine.timer;
 //
-//import com.sourceone.nemo.nemo.MainActivity;
+//import com.sourceone.nemo.nemo.android.MainActivity;
 //import com.sourceone.nemo.nemo.Settings;
 //import com.sourceone.nemo.nemo.sgine.track.SgineTrack;
 //

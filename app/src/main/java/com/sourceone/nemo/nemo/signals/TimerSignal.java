@@ -12,4 +12,8 @@ public class TimerSignal extends SgineSignal {
     public TimerSignal(TimerEvent event) {
         this.event = event;
     }
+
+    public TimerEvent getEvent() {
+        return event;
+    }
 }

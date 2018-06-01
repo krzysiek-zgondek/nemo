@@ -1,4 +1,4 @@
-package com.sourceone.nemo.nemo;
+package com.sourceone.nemo.nemo.android;
 
 import android.content.Context;
 import android.util.AttributeSet;

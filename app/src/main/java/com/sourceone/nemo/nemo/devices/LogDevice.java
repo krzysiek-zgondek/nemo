@@ -15,16 +15,16 @@ public class LogDevice extends SgineDevice {
     public LogDevice(){}
 
     @Override
-    public void wire(SgineRouter router) {
-        super.wire(router);
-        router.getOrCreateOutput(SgineSignal.class).connect(new SgineInput<SgineSignal>() {
+    public void wire(SgineDevice device) {
+        super.wire(device);
+        device.getOrCreateOutput(SgineSignal.class).connect(new SgineInput<SgineSignal>() {
             @Override
             public void onSignal(SgineSignal signal) {
                 Log.d(LogDevice.class.getName(), signal.toString() );
             }
         });
 
-        router.getOrCreateOutput(TimerSignal.class).connect(new SgineInput<TimerSignal>() {
+        device.getOrCreateOutput(TimerSignal.class).connect(new SgineInput<TimerSignal>() {
             @Override
             public void onSignal(TimerSignal signal) {
                 Log.d(LogDevice.class.getName(), signal.toString() );
